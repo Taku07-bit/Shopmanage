@@ -771,6 +771,13 @@ html,body { width:100%; height:100%; overflow:hidden; font-family:'Inter',sans-s
         <button class="btn-primary" onclick="saveStartCash()">Сохранить</button>
       </div>
       <div class="divider"></div>
+      <div class="purchase-form-card">
+        <div class="field-label">💰 Установить текущий баланс (сом)</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Введи сколько сейчас реально денег в кассе</div>
+        <input class="field-input" id="manual-cash-input" type="number" placeholder="Например: 5000" />
+        <button class="btn-primary" onclick="setManualCash()">Установить баланс</button>
+      </div>
+      <div class="divider"></div>
       <div class="purchase-form-card" style="text-align:center;">
         <div class="field-label" style="margin-bottom:12px;">⚠️ Зона администратора</div>
         <button onclick="resetAll()" style="padding:12px 24px;border:1px solid var(--red);border-radius:12px;background:transparent;color:var(--red);font-size:14px;font-weight:700;cursor:pointer;width:100%;">Сбросить все данные</button>
@@ -1636,6 +1643,15 @@ function saveStartCash() {
   if(isNaN(v)) { showToast('Введи сумму','error'); return; }
   state.startCash = v;
   save(); showToast('Стартовый остаток сохранён','success');
+}
+function setManualCash() {
+  const v = parseFloat(document.getElementById("manual-cash-input").value);
+  if(isNaN(v)) { showToast("Введи сумму","error"); return; }
+  if(!confirm("Установить баланс кассы: " + v + " сом? Это перезапишет текущий баланс.")) return;
+  pushHistory();
+  state.cash = v;
+  save(); updateCashDisplay();
+  showToast("✅ Баланс установлен: " + v + " сом","success");
 }
 function resetAll() {
   if(!confirm('Сбросить ВСЕ данные? Это нельзя отменить!')) return;
