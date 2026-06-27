@@ -1,0 +1,2 @@
+# Shopmanage
+Just a shop
