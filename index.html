@@ -1263,26 +1263,6 @@ function updateSaleTotal() {
   document.getElementById('sc-total').textContent = fmtNum(total)+' с';
 }
 
-function confirmSale() {
-  if(!selectedProduct) return;
-  const qty = parseFloat(document.getElementById('sc-qty').value)||0;
-  if(qty<=0) { showToast('Введи количество','error'); return; }
-  if(qty > selectedProduct.stock) { showToast('Недостаточно товара!','error'); return; }
-  pushHistory();
-  const total = selectedProduct.type==='bulk' ? (selectedProduct.price/100)*qty : selectedProduct.price*qty;
-  const idx = state.products.findIndex(p=>p.id===selectedProduct.id);
-  state.products[idx].stock -= qty;
-  state.products[idx].sold = (state.products[idx].sold||0) + qty;
-  state.cash += total;
-  state.sales.push({ id: Date.now().toString(), productId:selectedProduct.id, name:selectedProduct.name,
-    emoji:selectedProduct.emoji||'📦', photo:selectedProduct.photo, qty, total, price:selectedProduct.price,
-    cost:selectedProduct.cost, cashier:state.currentUser, time: new Date().toISOString() });
-  save(); closeModal('sale-confirm-modal'); renderProducts(); updateCashDisplay(); renderTopMini();
-  animateCash();
-  showToast(`Продано: ${selectedProduct.name} × ${qty} = ${fmtNum(total)} с`, 'success');
-  document.getElementById('sale-search').value='';
-  searchProducts('');
-}
 
 // ===== PURCHASE =====
 function addPurchase() {
@@ -1691,10 +1671,6 @@ function fmtTime(iso) {
 }
 
 // Track employee stats on sale
-const origConfirm = window.confirmSale;
-// Patch sales to track employees
-const _rawConfirmSale = confirmSale;
-
 // Update employee stats after each sale
 function patchEmployeeSale(name, amount) {
   if(!name) return;
@@ -1702,10 +1678,7 @@ function patchEmployeeSale(name, amount) {
   state.employees[name].sales++;
   state.employees[name].total = (state.employees[name].total||0) + amount;
 }
-// Override confirmSale to track employee
-const _origConfirmSale = confirmSale;
-window.confirmSale = function() { /* handled below */ };
-// Re-bind with tracking
+
 function confirmSale() {
   if(!selectedProduct) return;
   const qty = parseFloat(document.getElementById('sc-qty').value)||0;
